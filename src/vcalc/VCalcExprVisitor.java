@@ -14,6 +14,7 @@ public class VCalcExprVisitor extends VCalcBaseVisitor<VerilogInteger> {
         String id = ctx.ID().getText();  // id is left-hand side of '='
         VerilogInteger value = visit(ctx.expr());   // compute value of expression on right
         memory.put(id, value);           // store it in our memory
+        System.out.println(id + " <-- " + value.toString(10));
         return value;
     }
 
@@ -21,32 +22,86 @@ public class VCalcExprVisitor extends VCalcBaseVisitor<VerilogInteger> {
     @Override
     public VerilogInteger visitPrintExpr(VCalcParser.PrintExprContext ctx) {
         VerilogInteger value = visit(ctx.expr()); // evaluate the expr child
-        System.out.println(value);         // print the result
+        System.out.println(" = " + value.toString(10));         // print the result
         return VerilogInteger.ZERO;        // return dummy value
     }
 
     /** INT */
     @Override
     public VerilogInteger visitInt(VCalcParser.IntContext ctx) {
-        return VerilogInteger.decode(ctx.INT().getText());
+        VerilogInteger vi = VerilogInteger.decode(ctx.INT().getText());
+        System.out.print(" " + vi.toString(10) + " ");
+        return vi;
     }
 
     /** ID */
     @Override
     public VerilogInteger visitId(VCalcParser.IdContext ctx) {
         String id = ctx.ID().getText();
-        if ( memory.containsKey(id) ) return memory.get(id);
+        if ( memory.containsKey(id) ) {
+        	System.out.print(" " + id + "[" + memory.get(id).toString(10) + "] ");
+        	return memory.get(id);
+        }
+        
+        /* hmm... SHOULD raise an error... */
         return VerilogInteger.ZERO;
     }
 
-    /** expr op=('*'|'/') expr */
+    /** Exponent */
     @Override
-    public VerilogInteger visitMulDiv(VCalcParser.MulDivContext ctx) {
+    public VerilogInteger visitExponent(VCalcParser.ExponentContext ctx) {
+    	VerilogInteger left = visit(ctx.expr(0));  // get value of left subexpression
+    	VerilogInteger right = visit(ctx.expr(1)); // get value of right subexpression
+    	System.out.print(" ** ");
+    	int exponent = right.intValue();
+        return left.pow(exponent);
+    }
+    
+    /** BitInvert */
+    @Override
+    public VerilogInteger visitBitInvert(VCalcParser.BitInvertContext ctx) {
+    	VerilogInteger expr = visit(ctx.expr());
+    	System.out.print(" ~ ");
+        return expr.not();
+    }
+    
+    /** UnarySign */
+    @Override
+    public VerilogInteger visitUnarySign(VCalcParser.UnarySignContext ctx) {
+    	VerilogInteger expr = visit(ctx.expr());
+    	if (ctx.op.getType() == VCalcParser.OP_PLUS) {
+    		System.out.print(" + ");
+    		return expr;
+    	}
+    	System.out.print(" - ");
+        return expr.negate();
+    }
+
+    /** expr op=('*'|'/'|'%'|'//') expr */
+    @Override
+    public VerilogInteger visitMulDivMod(VCalcParser.MulDivModContext ctx) {
         VerilogInteger left = visit(ctx.expr(0));  // get value of left subexpression
         VerilogInteger right = visit(ctx.expr(1)); // get value of right subexpression
-        if ( ctx.op.getType() == VCalcParser.MUL )
+        if ( ctx.op.getType() == VCalcParser.OP_MULT ) {
+        	System.out.print(" * ");
         	return left.multiply(right);
-        return left.divide(right); // must be DIV
+        }
+        
+        if ( ctx.op.getType() == VCalcParser.OP_DIV ) {
+        	System.out.print(" / ");
+        	return left.divide(right);
+        }
+        
+        VerilogInteger[] result = left.divideAndRemainder(right);
+        
+        if ( ctx.op.getType() == VCalcParser.OP_MODULUS ) {
+        	System.out.print(" % ");
+        	return result[1];
+        }
+        
+        // must be OP_DIV_FLOOR
+        System.out.print(" /_ ");
+        return result[0];
     }
 
     /** expr op=('+'|'-') expr */
@@ -54,9 +109,68 @@ public class VCalcExprVisitor extends VCalcBaseVisitor<VerilogInteger> {
     public VerilogInteger visitAddSub(VCalcParser.AddSubContext ctx) {
     	VerilogInteger left = visit(ctx.expr(0));  // get value of left subexpression
     	VerilogInteger right = visit(ctx.expr(1)); // get value of right subexpression
-        if ( ctx.op.getType() == VCalcParser.ADD )
+        if ( ctx.op.getType() == VCalcParser.OP_PLUS ) {
+        	System.out.print(" + ");
         	return left.add(right);
+        }
+        System.out.print(" - ");
         return left.subtract(right); // must be SUB
+    }
+    
+    /** BitShift */
+    @Override
+    public VerilogInteger visitBitShift(VCalcParser.BitShiftContext ctx) {
+    	VerilogInteger left = visit(ctx.expr(0));  // get value of left subexpression
+    	VerilogInteger right = visit(ctx.expr(1)); // get value of right subexpression
+
+    	switch (ctx.op.getType()) {
+    	case VCalcParser.OP_DOWN_SHIFT:
+    		System.out.print(" >> ");
+    		return left.shiftRight(right.intValue(), true, false);
+    	case VCalcParser.OP_UP_SHIFT:
+    		System.out.print(" << ");
+    		return left.shiftLeft(right.intValue(), true, false);
+    	case VCalcParser.OP_DOWN_SHIFT_EXTEND:
+    		System.out.print(" >>> ");
+    		return left.shiftRight(right.intValue(), true, true);
+    	case VCalcParser.OP_UP_SHIFT_EXTEND:
+    		System.out.print(" <<< ");
+    		return left.shiftLeft(right.intValue(), true, true);
+    	default:
+    		System.err.println("Invalid operator for bit-shift");
+    		return VerilogInteger.ZERO;
+    	}
+    }
+    
+    /** BitAnd */
+    @Override
+    public VerilogInteger visitBitAnd(VCalcParser.BitAndContext ctx) {
+    	VerilogInteger left = visit(ctx.expr(0));  // get value of left subexpression
+    	VerilogInteger right = visit(ctx.expr(1)); // get value of right subexpression
+    	//int l = left.intValue();
+    	//int r = right.intValue();
+    	//System.out.println("Eval: " + left + " AND " + right);
+    	//System.out.println("Result: " + (l&r));
+    	System.out.print(" & ");
+        return left.and(right);
+    }
+    
+    /** BitXor */
+    @Override
+    public VerilogInteger visitBitXor(VCalcParser.BitXorContext ctx) {
+    	VerilogInteger left = visit(ctx.expr(0));  // get value of left subexpression
+    	VerilogInteger right = visit(ctx.expr(1)); // get value of right subexpression
+    	System.out.print(" ^ ");
+        return left.xor(right);
+    }
+    
+    /** BitOr */
+    @Override
+    public VerilogInteger visitBitOr(VCalcParser.BitOrContext ctx) {
+    	VerilogInteger left = visit(ctx.expr(0));  // get value of left subexpression
+    	VerilogInteger right = visit(ctx.expr(1)); // get value of right subexpression
+    	System.out.print(" | ");
+    	return left.or(right);
     }
 
     /** '(' expr ')' */
