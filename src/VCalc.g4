@@ -34,7 +34,12 @@ expr:	<assoc=right> expr OP_POW  expr		# Exponent
 	|	expr OP_AND expr					# BitAnd
 	|	expr OP_XOR expr					# BitXor
 	|	expr OP_OR expr						# BitOr
-	|	INT						# int
+	|	value=(
+					DECIMAL_LITERAL
+				|	OCTAL_LITERAL
+				|	BIN_LITERAL
+				|	HEX_LITERAL
+				)				# int
 	|	ID						# id
 	|	'(' expr ')'			# parens
 	;
@@ -64,7 +69,19 @@ LINE_COMMENT	:   '//' ~('\n'|'\r')* '\r'? '\n'	->	skip ;
 
 /* General Items */
 ID	:	[a-zA-Z]+ ;
-INT	:	[0-9]+ ;
 NEWLINE	:	'\r'? '\n' ;
 WS	:	[ \t]+	->	skip ;
 
+/* Literals */
+OCTAL_LITERAL		:	('0' NonZeroOctDigit OctDigit* ) ;
+DECIMAL_LITERAL		:	('0' | NonZeroDecDigit DecDigit*) ;
+HEX_LITERAL			:	('0' ('x'|'X') HexDigit+) ;
+BIN_LITERAL			:	('0' ('b'|'B') BinDigit+) ;
+
+/* building blocks */
+fragment HexDigit			: [0-9a-fA-F] ;
+fragment NonZeroDecDigit	: [1-9] ;
+fragment DecDigit			: ('0' | NonZeroDecDigit) ;
+fragment NonZeroOctDigit	: [1-7] ;
+fragment OctDigit			: ('0' | NonZeroOctDigit) ;
+fragment BinDigit			: [0-1] ;

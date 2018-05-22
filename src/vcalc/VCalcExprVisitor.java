@@ -29,7 +29,21 @@ public class VCalcExprVisitor extends VCalcBaseVisitor<VerilogInteger> {
     /** INT */
     @Override
     public VerilogInteger visitInt(VCalcParser.IntContext ctx) {
-        VerilogInteger vi = VerilogInteger.decode(ctx.INT().getText());
+        VerilogInteger vi;
+        switch (ctx.value.getType()) {
+        case VCalcParser.BIN_LITERAL:
+        	vi = new VerilogInteger(ctx.value.getText().substring(2), 2);
+        	break;
+        case VCalcParser.OCTAL_LITERAL:
+        	vi = new VerilogInteger(ctx.value.getText().substring(1), 8);
+        	break;
+        case VCalcParser.HEX_LITERAL:
+        	vi = new VerilogInteger(ctx.value.getText().substring(2), 16);
+        	break;
+        default:
+        	vi = new VerilogInteger(ctx.value.getText(), 10);
+        	break;
+        }
         System.out.print(" " + vi.toString(10) + " ");
         return vi;
     }
