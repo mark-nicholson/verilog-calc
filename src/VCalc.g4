@@ -34,16 +34,20 @@ expr:	<assoc=right> expr OP_POW  expr		# Exponent
 	|	expr OP_AND expr					# BitAnd
 	|	expr OP_XOR expr					# BitXor
 	|	expr OP_OR expr						# BitOr
-	|	value=(
-					DECIMAL_LITERAL
-				|	OCTAL_LITERAL
-				|	BIN_LITERAL
-				|	HEX_LITERAL
-				)				# int
+	|	numeric_literal						# NumericLiteral
 	|	ID						# id
 	|	'(' expr ')'			# parens
 	;
- 
+
+numeric_literal:
+	value=(
+			DECIMAL_LITERAL
+		|	OCTAL_LITERAL
+		|	BIN_LITERAL
+		|	HEX_LITERAL
+	)							# int
+	;
+
 /* names for Tokens */
 OP_PLUS:                  '+' ;
 OP_MINUS:                 '-' ;  
