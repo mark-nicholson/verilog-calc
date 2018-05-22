@@ -29,11 +29,17 @@ bob * tub
 
 32 >>> 3
 
+/* probably should put a comment to test */
+
 0x20 / 0x8
 
 0b1100 | 0b11
 
 037 + 021 + 010
+
+/*
+ * Multiline one
+ */
 
 16'hdead + 8'b00000001
 
@@ -41,6 +47,8 @@ bob * tub
 
 {8'hcc}
 
+
+// one liner
 {8'hcc,16'h0001}
 
 {8'hcc,{16'h0001,4'h8},4'hf}

@@ -35,8 +35,8 @@ expr:	<assoc=right> expr OP_POW  expr		# Exponent
 	|	expr OP_XOR expr					# BitXor
 	|	expr OP_OR expr						# BitOr
 	|	(numeric_literal|verilog_literal)	# NumericLiteral
-	|	ID						# id
-	|	'(' expr ')'			# parens
+	|	ID									# id
+	|	'(' expr ')'						# parens
 	;
 
 numeric_literal:
@@ -70,10 +70,6 @@ COMMA:						',' ;
 OPEN_BRACE:					'{' ;
 CLOSE_BRACE:				'}' ;
 
-/* Commenting */
-COMMENT			:	'/*' ( . )*? '*/'	->	skip ;
-// OP_DIV_FLOOR as '//' conflicts with line-comment -- Because it is stripped early, it is gone before tokenizing
-LINE_COMMENT	:   '//' ~('\n'|'\r')* '\r'? '\n'	->	skip ;
 
 /* General Items */
 ID	:	[a-zA-Z]+ ;
@@ -140,3 +136,8 @@ fragment VERILOG_BASE_BINARY:      VERILOG_TICK ( 'b' | 'B' ) ;
 fragment VERILOG_BASE_DECIMAL:     VERILOG_TICK ( 'd' | 'D' ) ;
 fragment VERILOG_BASE_OCTAL:       VERILOG_TICK ( 'o' | 'O' ) ;
 fragment VERILOG_BASE_HEXADECIMAL: VERILOG_TICK ( 'h' | 'H' ) ;
+
+/* Commenting */
+COMMENT			:	'/*' ( . )*? '*/'	->	skip ;
+// OP_DIV_FLOOR as '//' conflicts with line-comment -- Because it is stripped early, it is gone before tokenizing
+LINE_COMMENT	:   '//' ~('\n'|'\r')* '\r'? '\n'	->	skip ;
