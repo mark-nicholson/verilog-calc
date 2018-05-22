@@ -215,4 +215,25 @@ public class VCalcExprVisitor extends VCalcBaseVisitor<VerilogInteger> {
         return visit(ctx.expr()); // return child expr's value
     }
 
+    /** VerilogAggregate */
+   public VerilogInteger visitVerilogAggregate(VCalcParser.VerilogAggregateContext ctx) {
+    	System.out.println("VerilogComplex");
+    	int repeat = 1;
+    	
+    	if (ctx.repeat != null)
+    		repeat = Integer.parseUnsignedInt(ctx.repeat.getText(), 10);
+
+    	VerilogInteger value = new VerilogInteger();
+    	for ( VCalcParser.Verilog_literalContext item : ctx.verilog_literal() ) {
+    		value = value.concatenate( visit(item) );
+    	}
+    	
+    	System.out.print(" " + value.toString(10) + " ");
+    	return value.replicate(repeat);
+
+    	//VerilogInteger value = VerilogInteger.decode(ctx.vn.getText());
+    	//System.out.print(" " + value.toString(10) + " ");
+    	//return value;
+    }
 }
+

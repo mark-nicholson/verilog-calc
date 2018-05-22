@@ -66,6 +66,10 @@ OP_XOR:                   '^' ;
 OP_BIT_INVERT:            '~' ;  
 OP_ASSIGN:                '=' ;
 
+COMMA:						',' ;
+OPEN_BRACE:					'{' ;
+CLOSE_BRACE:				'}' ;
+
 /* Commenting */
 COMMENT			:	'/*' ( . )*? '*/'	->	skip ;
 // OP_DIV_FLOOR as '//' conflicts with line-comment -- Because it is stripped early, it is gone before tokenizing
@@ -106,8 +110,11 @@ verilog_literal:
 		|	VERILOG_OCT_LITERAL
 		|	VERILOG_DEC_LITERAL
 		|	VERILOG_HEX_LITERAL
-	)								# Verilog
+	)												# Verilog
+      /* Support aggregated values */
+	| repeat=DECIMAL_LITERAL? OPEN_BRACE vn=verilog_literal ( COMMA vn=verilog_literal )* CLOSE_BRACE		# VerilogAggregate
 	;
+
 
 /* base verilog numbers */
 VERILOG_BIN_LITERAL:  NonZeroDecDigit+ VERILOG_BASE_BINARY      VerilogBinDigit+ ;
