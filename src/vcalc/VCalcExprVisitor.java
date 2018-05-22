@@ -48,6 +48,28 @@ public class VCalcExprVisitor extends VCalcBaseVisitor<VerilogInteger> {
         return vi;
     }
 
+    /** Verilog */
+    @Override
+    public VerilogInteger visitVerilog(VCalcParser.VerilogContext ctx) {
+        VerilogInteger vi;
+        switch (ctx.value.getType()) {
+        case VCalcParser.VERILOG_BIN_LITERAL:
+        	vi = VerilogInteger.decode(ctx.value.getText());
+        	break;
+        case VCalcParser.VERILOG_OCT_LITERAL:
+        	vi = VerilogInteger.decode(ctx.value.getText());
+        	break;
+        case VCalcParser.VERILOG_HEX_LITERAL:
+        	vi = VerilogInteger.decode(ctx.value.getText());
+        	break;
+        default:
+        	vi = VerilogInteger.decode(ctx.value.getText());
+        	break;
+        }
+        System.out.print(" " + vi.toString(10) + " ");
+        return vi;
+    }
+
     /** ID */
     @Override
     public VerilogInteger visitId(VCalcParser.IdContext ctx) {

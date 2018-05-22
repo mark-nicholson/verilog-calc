@@ -35,11 +35,11 @@ bob * tub
 
 037 + 021 + 010
 
-/*
 16'hdead + 8'b00000001
 
 32'habadcafe
 
+/*
 2{16'hbeef}
 
 3{2{16'hbeef},16'hcafe}

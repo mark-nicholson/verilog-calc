@@ -34,7 +34,7 @@ expr:	<assoc=right> expr OP_POW  expr		# Exponent
 	|	expr OP_AND expr					# BitAnd
 	|	expr OP_XOR expr					# BitXor
 	|	expr OP_OR expr						# BitOr
-	|	numeric_literal						# NumericLiteral
+	|	(numeric_literal|verilog_literal)	# NumericLiteral
 	|	ID						# id
 	|	'(' expr ')'			# parens
 	;
@@ -89,3 +89,47 @@ fragment DecDigit			: ('0' | NonZeroDecDigit) ;
 fragment NonZeroOctDigit	: [1-7] ;
 fragment OctDigit			: ('0' | NonZeroOctDigit) ;
 fragment BinDigit			: [0-1] ;
+
+
+/*******************************************************************************
+ *
+ *                 Verilog Numeric Support
+ * 
+ * http://www.asic-world.com/verilog/operators2.html
+ * http://www.verilog.com/VerilogBNF.html#REF148
+ *
+ *******************************************************************************/
+
+verilog_literal:
+	value=(
+			VERILOG_BIN_LITERAL
+		|	VERILOG_OCT_LITERAL
+		|	VERILOG_DEC_LITERAL
+		|	VERILOG_HEX_LITERAL
+	)								# Verilog
+	;
+
+/* base verilog numbers */
+VERILOG_BIN_LITERAL:  NonZeroDecDigit+ VERILOG_BASE_BINARY      VerilogBinDigit+ ;
+VERILOG_DEC_LITERAL:  NonZeroDecDigit+ VERILOG_BASE_DECIMAL     DecDigit+ ;
+VERILOG_HEX_LITERAL:  NonZeroDecDigit+ VERILOG_BASE_HEXADECIMAL VerilogHexDigit+ ;
+VERILOG_OCT_LITERAL:  NonZeroDecDigit+ VERILOG_BASE_OCTAL       VerilogOctDigit+ ;
+
+
+/* meta states */
+fragment Spacers  : ('_') ;
+fragment TriState : ('z' | 'Z') ;
+fragment DontCare : ('x' | 'X') ;
+
+/* verilog digits */
+fragment VerilogBinDigit : ( BinDigit | TriState | DontCare | Spacers ) ;
+fragment VerilogDecDigit : ( DecDigit | TriState | DontCare | Spacers ) ;
+fragment VerilogOctDigit : ( OctDigit | TriState | DontCare | Spacers ) ;
+fragment VerilogHexDigit : ( HexDigit | TriState | DontCare | Spacers ) ;
+
+/* VERILOG Base Identifiers */
+fragment VERILOG_TICK:             '\'' ;
+fragment VERILOG_BASE_BINARY:      VERILOG_TICK ( 'b' | 'B' ) ;
+fragment VERILOG_BASE_DECIMAL:     VERILOG_TICK ( 'd' | 'D' ) ;
+fragment VERILOG_BASE_OCTAL:       VERILOG_TICK ( 'o' | 'O' ) ;
+fragment VERILOG_BASE_HEXADECIMAL: VERILOG_TICK ( 'h' | 'H' ) ;
