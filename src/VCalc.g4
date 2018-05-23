@@ -1,5 +1,5 @@
 /**
- * Define a grammar called Hello
+ * Define a grammar for a calculator supporting Verilog style numerics
  */
 
 grammar VCalc;
