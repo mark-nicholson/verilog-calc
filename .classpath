@@ -4,6 +4,6 @@
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="/opt/ANTLr/4.7/antlr-runtime-4.7.jar"/>
-	<classpathentry kind="lib" path="/home/mjn/eclipse-workspace/org.nicholnet.util.jar"/>
+	<classpathentry kind="lib" path="/work/mjn/eclipse/org.nicholnet.util.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
